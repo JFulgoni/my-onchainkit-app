@@ -15,32 +15,19 @@ import {
   EthBalance,
 } from "@coinbase/onchainkit/identity";
 import { Transaction } from '@coinbase/onchainkit/transaction';
-import { useAccount, useBalance, useReadContract, useWriteContract } from 'wagmi';
+import { useAccount, useBalance, useWriteContract } from 'wagmi';
 import { calls } from './calls';
 import { useState, useEffect } from 'react';
 
 export default function App() {
   const { address, isConnected } = useAccount();
   const [transactionHash, setTransactionHash] = useState<string>('');
+  const [contractValue, setContractValue] = useState<string>('');
+  const [isReading, setIsReading] = useState(false);
 
   // Example of reading contract data
   const { data: balance } = useBalance({
     address,
-  });
-
-  // Example of reading contract state
-  const { data: contractData } = useReadContract({
-    address: '0x7B39075D8A3422cdE4661F616D7956Aee0D54310',
-    abi: [
-      {
-        type: 'function',
-        name: 'number',
-        inputs: [],
-        outputs: [{ type: 'uint256' }],
-        stateMutability: 'view',
-      },
-    ],
-    functionName: 'number',
   });
 
   // Example of writing to contract
@@ -65,6 +52,60 @@ export default function App() {
       });
     } catch (error) {
       console.error('Transaction failed:', error);
+    }
+  };
+
+  const handleReadContract = async () => {
+    if (!address) {
+      setContractValue('Please connect your wallet first');
+      return;
+    }
+    
+    setIsReading(true);
+    setContractValue('Reading...');
+    
+    try {
+      console.log('Reading contract state...');
+      console.log('Contract address:', '0x7B39075D8A3422cdE4661F616D7956Aee0D54310');
+      console.log('User address:', address);
+      
+      // Use a direct RPC call instead of the hook to avoid repeated calls
+      const response = await fetch('https://sepolia.base.org', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'eth_call',
+          params: [
+            {
+              to: '0x7B39075D8A3422cdE4661F616D7956Aee0D54310',
+              data: '0x8381f58a', // function selector for number()
+            },
+            'latest'
+          ],
+          id: 1
+        })
+      });
+      
+      const result = await response.json();
+      console.log('RPC response:', result);
+      
+      if (result.result) {
+        // Convert hex to decimal
+        const numberValue = parseInt(result.result, 16);
+        console.log('Contract number value:', numberValue);
+        setContractValue(numberValue.toString());
+      } else {
+        console.log('No data returned from contract read');
+        setContractValue('No data returned');
+      }
+    } catch (error) {
+      console.error('Failed to read contract:', error);
+      setContractValue(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsReading(false);
     }
   };
 
@@ -129,10 +170,27 @@ export default function App() {
               )}
               
               {/* Display contract data */}
-              {contractData && (
+              {contractValue && (
                 <div className="mt-2">
                   <p className="text-sm text-gray-600 dark:text-gray-400">Counter Value:</p>
-                  <p className="font-mono text-sm">{contractData.toString()}</p>
+                  <p className="font-mono text-sm">{contractValue}</p>
+                </div>
+              )}
+              
+              {/* Read Contract Button */}
+              <button
+                onClick={handleReadContract}
+                disabled={isReading}
+                className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 mr-2"
+              >
+                {isReading ? 'Reading...' : 'Read Contract State'}
+              </button>
+              
+              {/* Display manual read result */}
+              {contractValue && (
+                <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Manual Read Result:</p>
+                  <p className="font-mono text-sm break-all">{contractValue}</p>
                 </div>
               )}
               
