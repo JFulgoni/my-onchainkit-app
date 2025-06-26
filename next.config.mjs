@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const isProd = process.env.NODE_ENV === 'production';
 const nextConfig = {
     // Silence warnings
     // https://github.com/WalletConnect/walletconnect-monorepo/issues/1908
@@ -7,8 +8,10 @@ const nextConfig = {
       return config;
     },
     output: 'export',
-    basePath: '/my-onchainkit-app',
-    assetPrefix: '/my-onchainkit-app/',
+    ...(isProd ? {
+      basePath: '/my-onchainkit-app',
+      assetPrefix: '/my-onchainkit-app/',
+    } : {}),
     images: {
       unoptimized: true,
     }
