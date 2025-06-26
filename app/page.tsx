@@ -18,6 +18,7 @@ import { Transaction } from '@coinbase/onchainkit/transaction';
 import { useAccount, useBalance, useWriteContract } from 'wagmi';
 import { calls } from './calls';
 import { useState, useEffect } from 'react';
+import MyNameIsComponent from "./components/MyNameIs";
 
 export default function App() {
   const { address, isConnected } = useAccount();
@@ -37,7 +38,7 @@ export default function App() {
 
   const handleIncrement = async () => {
     if (!address) return;
-    
+
     try {
       writeContract({
         address: '0x7B39075D8A3422cdE4661F616D7956Aee0D54310',
@@ -62,15 +63,15 @@ export default function App() {
       setContractValue('Please connect your wallet first');
       return;
     }
-    
+
     setIsReading(true);
     setContractValue('Reading...');
-    
+
     try {
       console.log('Reading contract state...');
       console.log('Contract address:', '0x7B39075D8A3422cdE4661F616D7956Aee0D54310');
       console.log('User address:', address);
-      
+
       // Use a direct RPC call instead of the hook to avoid repeated calls
       const response = await fetch('https://sepolia.base.org', {
         method: 'POST',
@@ -90,10 +91,10 @@ export default function App() {
           id: 1
         })
       });
-      
+
       const result = await response.json();
       console.log('RPC response:', result);
-      
+
       if (result.result) {
         // Convert hex to decimal
         const numberValue = parseInt(result.result, 16);
@@ -116,38 +117,38 @@ export default function App() {
       setCoinbaseContractValue('Please connect your wallet first');
       return;
     }
-    
+
     setIsReadingCoinbase(true);
     setCoinbaseContractValue('Reading via Coinbase API...');
-    
+
     try {
       console.log('Reading contract state via Coinbase API...');
       console.log('Contract address:', '0x7B39075D8A3422cdE4661F616D7956Aee0D54310');
       console.log('User address:', address);
-      
+
       // Check if API key is available
       const apiKey = process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY;
       if (!apiKey) {
         setCoinbaseContractValue('Error: OnchainKit API key not found. Please add NEXT_PUBLIC_ONCHAINKIT_API_KEY to your .env.local file');
         return;
       }
-      
+
       console.log('Using API key:', apiKey.substring(0, 10) + '...');
-      
+
       // Try different Coinbase API endpoint formats
       const endpoints = [
         'https://api.developer.coinbase.com/rpc/v1/base-sepolia/ce5dba14-05b5-4a1c-99b0-14d75c6fc8cf',
         'https://api.developer.coinbase.com/rpc/v1/base-sepolia',
         'https://api.developer.coinbase.com/rpc/v1/base-sepolia/'
       ];
-      
+
       let response: Response | undefined;
       let workingEndpoint = null;
-      
+
       for (const endpoint of endpoints) {
         try {
           console.log('Trying endpoint:', endpoint);
-          
+
           response = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -167,9 +168,9 @@ export default function App() {
               id: 1
             })
           });
-          
+
           console.log(`Endpoint ${endpoint} response status:`, response.status);
-          
+
           if (response.ok) {
             workingEndpoint = endpoint;
             break;
@@ -180,20 +181,20 @@ export default function App() {
           console.log(`Endpoint ${endpoint} failed with error:`, error);
         }
       }
-      
+
       if (!workingEndpoint || !response) {
         setCoinbaseContractValue('Error: All Coinbase API endpoints failed. Please check your API key and try again.');
         return;
       }
-      
+
       console.log('Working endpoint found:', workingEndpoint);
       console.log('Coinbase API response status:', response.status);
       console.log('Coinbase API response headers:', Object.fromEntries(response.headers.entries()));
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Coinbase API error:', errorText);
-        
+
         if (response.status === 404) {
           setCoinbaseContractValue('Error: 404 - Coinbase API endpoint not found. This might be due to incorrect API key or endpoint URL.');
         } else {
@@ -201,10 +202,10 @@ export default function App() {
         }
         return;
       }
-      
+
       const result = await response.json();
       console.log('Coinbase API response:', result);
-      
+
       if (result.result) {
         // Convert hex to decimal
         const numberValue = parseInt(result.result, 16);
@@ -265,18 +266,18 @@ export default function App() {
       </header>
       <main className="flex flex-grow items-center justify-center">
         <div className="w-full max-w-4xl p-4">
+          
           <div className="mx-auto mb-6 w-1/3">
-            <Transaction 
-              calls={calls} 
+            <Transaction
+              calls={calls}
             />
           </div>
-          
           {/* Display wallet information */}
           {isConnected && address && (
             <div className="text-center mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
               <p className="text-sm text-gray-600 dark:text-gray-400">Connected Wallet Address:</p>
               <p className="font-mono text-sm break-all">{address}</p>
-              
+
               {/* Display balance */}
               {balance && (
                 <div className="mt-2">
@@ -284,7 +285,7 @@ export default function App() {
                   <p className="font-mono text-sm">{balance.formatted} {balance.symbol}</p>
                 </div>
               )}
-              
+
               {/* Display contract data */}
               {contractValue && (
                 <div className="mt-2">
@@ -292,7 +293,7 @@ export default function App() {
                   <p className="font-mono text-sm">{contractValue}</p>
                 </div>
               )}
-              
+
               {/* Read Contract Button */}
               <button
                 onClick={handleReadContract}
@@ -301,7 +302,7 @@ export default function App() {
               >
                 {isReading ? 'Reading...' : 'Read Contract State'}
               </button>
-              
+
               {/* Read Contract via Coinbase API Button */}
               <button
                 onClick={handleReadContractCoinbase}
@@ -310,7 +311,7 @@ export default function App() {
               >
                 {isReadingCoinbase ? 'Reading...' : 'Read via Coinbase API'}
               </button>
-              
+
               {/* Display manual read result */}
               {contractValue && (
                 <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
@@ -318,7 +319,7 @@ export default function App() {
                   <p className="font-mono text-sm break-all">{contractValue}</p>
                 </div>
               )}
-              
+
               {/* Display Coinbase API read result */}
               {coinbaseContractValue && (
                 <div className="mt-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-200 dark:border-purple-800">
@@ -326,7 +327,7 @@ export default function App() {
                   <p className="font-mono text-sm break-all">{coinbaseContractValue}</p>
                 </div>
               )}
-              
+
               {/* Manual increment button */}
               <button
                 onClick={handleIncrement}
@@ -335,7 +336,7 @@ export default function App() {
               >
                 {isPending ? 'Processing...' : 'Increment Counter'}
               </button>
-              
+
               {/* Display transaction hash */}
               {transactionHash && (
                 <div className="mt-2">
@@ -345,6 +346,7 @@ export default function App() {
               )}
             </div>
           )}
+          <MyNameIsComponent />
         </div>
       </main>
     </div>
