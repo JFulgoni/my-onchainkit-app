@@ -1,5 +1,7 @@
 // Examples of Coinbase Wallet API calls using OnchainKit and wagmi
 
+/* 
+
 import { useAccount, useBalance, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { useState, useEffect } from 'react';
 
@@ -198,3 +200,4 @@ export function useTransactionHistory() {
     clearHistory
   };
 } 
+  */
