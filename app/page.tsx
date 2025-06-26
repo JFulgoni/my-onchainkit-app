@@ -23,7 +23,9 @@ export default function App() {
   const { address, isConnected } = useAccount();
   const [transactionHash, setTransactionHash] = useState<string>('');
   const [contractValue, setContractValue] = useState<string>('');
+  const [coinbaseContractValue, setCoinbaseContractValue] = useState<string>('');
   const [isReading, setIsReading] = useState(false);
+  const [isReadingCoinbase, setIsReadingCoinbase] = useState(false);
 
   // Example of reading contract data
   const { data: balance } = useBalance({
@@ -109,6 +111,120 @@ export default function App() {
     }
   };
 
+  const handleReadContractCoinbase = async () => {
+    if (!address) {
+      setCoinbaseContractValue('Please connect your wallet first');
+      return;
+    }
+    
+    setIsReadingCoinbase(true);
+    setCoinbaseContractValue('Reading via Coinbase API...');
+    
+    try {
+      console.log('Reading contract state via Coinbase API...');
+      console.log('Contract address:', '0x7B39075D8A3422cdE4661F616D7956Aee0D54310');
+      console.log('User address:', address);
+      
+      // Check if API key is available
+      const apiKey = process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY;
+      if (!apiKey) {
+        setCoinbaseContractValue('Error: OnchainKit API key not found. Please add NEXT_PUBLIC_ONCHAINKIT_API_KEY to your .env.local file');
+        return;
+      }
+      
+      console.log('Using API key:', apiKey.substring(0, 10) + '...');
+      
+      // Try different Coinbase API endpoint formats
+      const endpoints = [
+        'https://api.developer.coinbase.com/rpc/v1/base-sepolia/ce5dba14-05b5-4a1c-99b0-14d75c6fc8cf',
+        'https://api.developer.coinbase.com/rpc/v1/base-sepolia',
+        'https://api.developer.coinbase.com/rpc/v1/base-sepolia/'
+      ];
+      
+      let response: Response | undefined;
+      let workingEndpoint = null;
+      
+      for (const endpoint of endpoints) {
+        try {
+          console.log('Trying endpoint:', endpoint);
+          
+          response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'eth_call',
+              params: [
+                {
+                  to: '0x7B39075D8A3422cdE4661F616D7956Aee0D54310',
+                  data: '0x8381f58a', // function selector for number()
+                },
+                'latest'
+              ],
+              id: 1
+            })
+          });
+          
+          console.log(`Endpoint ${endpoint} response status:`, response.status);
+          
+          if (response.ok) {
+            workingEndpoint = endpoint;
+            break;
+          } else {
+            console.log(`Endpoint ${endpoint} failed with status:`, response.status);
+          }
+        } catch (error) {
+          console.log(`Endpoint ${endpoint} failed with error:`, error);
+        }
+      }
+      
+      if (!workingEndpoint || !response) {
+        setCoinbaseContractValue('Error: All Coinbase API endpoints failed. Please check your API key and try again.');
+        return;
+      }
+      
+      console.log('Working endpoint found:', workingEndpoint);
+      console.log('Coinbase API response status:', response.status);
+      console.log('Coinbase API response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Coinbase API error:', errorText);
+        
+        if (response.status === 404) {
+          setCoinbaseContractValue('Error: 404 - Coinbase API endpoint not found. This might be due to incorrect API key or endpoint URL.');
+        } else {
+          setCoinbaseContractValue(`Coinbase API Error: ${response.status} - ${errorText}`);
+        }
+        return;
+      }
+      
+      const result = await response.json();
+      console.log('Coinbase API response:', result);
+      
+      if (result.result) {
+        // Convert hex to decimal
+        const numberValue = parseInt(result.result, 16);
+        console.log('Contract number value (Coinbase):', numberValue);
+        setCoinbaseContractValue(numberValue.toString());
+      } else if (result.error) {
+        console.error('Coinbase API returned error:', result.error);
+        setCoinbaseContractValue(`API Error: ${result.error.message || 'Unknown error'}`);
+      } else {
+        console.log('No data returned from Coinbase API');
+        setCoinbaseContractValue('No data returned from Coinbase API');
+      }
+    } catch (error) {
+      console.error('Failed to read contract via Coinbase API:', error);
+      setCoinbaseContractValue(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsReadingCoinbase(false);
+    }
+  };
+
   // Update transaction hash when writeData changes
   useEffect(() => {
     if (writeData) {
@@ -186,11 +302,28 @@ export default function App() {
                 {isReading ? 'Reading...' : 'Read Contract State'}
               </button>
               
+              {/* Read Contract via Coinbase API Button */}
+              <button
+                onClick={handleReadContractCoinbase}
+                disabled={isReadingCoinbase}
+                className="mt-4 px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50"
+              >
+                {isReadingCoinbase ? 'Reading...' : 'Read via Coinbase API'}
+              </button>
+              
               {/* Display manual read result */}
               {contractValue && (
                 <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Manual Read Result:</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Direct RPC Result:</p>
                   <p className="font-mono text-sm break-all">{contractValue}</p>
+                </div>
+              )}
+              
+              {/* Display Coinbase API read result */}
+              {coinbaseContractValue && (
+                <div className="mt-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-200 dark:border-purple-800">
+                  <p className="text-sm text-purple-600 dark:text-purple-400">Coinbase API Result:</p>
+                  <p className="font-mono text-sm break-all">{coinbaseContractValue}</p>
                 </div>
               )}
               
