@@ -46,7 +46,7 @@ function stringToBytes32(str: string): `0x${string}` {
 }
 
 export default function MyNameIsComponent() {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const [inputName, setInputName] = useState("");
   const [displayName, setDisplayName] = useState<string>("");
   const [txStatus, setTxStatus] = useState<string>("");
