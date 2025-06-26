@@ -6,7 +6,9 @@ const nextConfig = {
       config.externals.push('pino-pretty', 'lokijs', 'encoding');
       return config;
     },
-    output: 'export'
+    output: 'export',
+    basePath: '/my-onchainkit-app',
+    assetPrefix: '/my-onchainkit-app/',
   };
   
   export default nextConfig;
