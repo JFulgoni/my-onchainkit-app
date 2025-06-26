@@ -15,9 +15,12 @@ import {
   EthBalance,
 } from "@coinbase/onchainkit/identity";
 import { Transaction } from '@coinbase/onchainkit/transaction';
+import { useAccount } from 'wagmi';
 import { calls } from './calls';
 
 export default function App() {
+  const { address, isConnected } = useAccount();
+
   return (
     <div className="flex flex-col min-h-screen font-sans dark:bg-background dark:text-white bg-white text-black">
       <header className="pt-4 pr-4">
@@ -56,9 +59,15 @@ export default function App() {
               calls={calls} 
             />
           </div>
+          {/* Display wallet address programmatically */}
+          {isConnected && address && (
+            <div className="text-center mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Connected Wallet Address:</p>
+              <p className="font-mono text-sm break-all">{address}</p>
+            </div>
+          )}
         </div>
       </main>
-      ;
     </div>
   );
 }
