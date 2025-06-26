@@ -9,6 +9,9 @@ const nextConfig = {
     output: 'export',
     basePath: '/my-onchainkit-app',
     assetPrefix: '/my-onchainkit-app/',
+    images: {
+      unoptimized: true,
+    }
   };
   
   export default nextConfig;
