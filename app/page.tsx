@@ -1,25 +1,9 @@
 "use client";
 
-import {
-  ConnectWallet,
-  Wallet,
-  WalletDropdown,
-  WalletDropdownLink,
-  WalletDropdownDisconnect,
-} from "@coinbase/onchainkit/wallet";
-import {
-  Address,
-  Avatar,
-  Name,
-  Identity,
-  EthBalance,
-} from "@coinbase/onchainkit/identity";
-import { Transaction } from '@coinbase/onchainkit/transaction';
+import { useEffect, useState } from 'react';
 import { useAccount, useBalance, useWriteContract } from 'wagmi';
-import { calls } from './calls';
-import { useState, useEffect } from 'react';
-import MyNameIsComponent from "./components/MyNameIs";
 import HeaderWallet from "./components/HeaderWallet";
+import MyNameIsComponent from "./components/MyNameIs";
 import TransactionSection from "./components/TransactionSection";
 import WalletInfoPanel from "./components/WalletInfoPanel";
 
