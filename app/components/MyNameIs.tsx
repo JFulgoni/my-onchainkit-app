@@ -88,8 +88,8 @@ export default function MyNameIsComponent() {
   };
 
   return (
-    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800 max-w-md mx-auto mt-6">
-      <h2 className="text-lg font-bold mb-2 text-blue-700 dark:text-blue-300">MyNameIs Contract</h2>
+    <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800 max-w-md mx-auto mt-6">
+      <h2 className="text-lg font-bold mb-2 text-red-700 dark:text-red-300">MyNameIs Contract</h2>
       <div className="mb-2">
         <span className="font-semibold">Current Name:</span>{" "}
         {isReading ? (
@@ -111,12 +111,12 @@ export default function MyNameIsComponent() {
         <button
           onClick={handleSetName}
           disabled={!isConnected || isPending || !inputName}
-          className="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          className="px-4 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
         >
           {isPending ? "Setting..." : "Set Name"}
         </button>
       </div>
-      {txStatus && <div className="text-sm text-blue-700 dark:text-blue-300">{txStatus}</div>}
+      {txStatus && <div className="text-sm text-red-700 dark:text-red-300">{txStatus}</div>}
       {txHash && (
         <div className="text-xs text-gray-500 mt-1 break-all">Tx Hash: {txHash}</div>
       )}
