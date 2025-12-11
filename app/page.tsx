@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAccount, useBalance, useWriteContract } from 'wagmi';
+import { baseSepolia } from 'wagmi/chains';
 import HeaderWallet from "./components/HeaderWallet";
 import MyNameIsComponent from "./components/MyNameIs";
 import TransactionSection from "./components/TransactionSection";
@@ -29,6 +30,7 @@ export default function App() {
     try {
       writeContract({
         address: '0x7B39075D8A3422cdE4661F616D7956Aee0D54310',
+        chainId: baseSepolia.id,
         abi: [
           {
             type: 'function',

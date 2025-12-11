@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import { baseSepolia } from 'wagmi/chains';
 
 // MyNameIs contract ABI
 const myNameIsAbi = [
@@ -73,6 +74,7 @@ export default function MyNameIsComponent() {
     try {
       writeContract({
         address: MYNAMEIS_CONTRACT_ADDRESS,
+        chainId: baseSepolia.id,
         abi: myNameIsAbi,
         functionName: "setName",
         args: [stringToBytes32(inputName)],
